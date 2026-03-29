@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvisiVerse — Beyond the Visible</title>
+
+  <!-- A-Frame VR Framework -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --void: #020408;
+      --deep: #030b14;
+      --plasma: #00ffe7;
+      --quantum: #7b2fff;
+      --bio: #00ff88;
+      --chem: #ff6b35;
+      --field: #ffd600;
+      --glass: rgba(0,255,231,0.06);
+      --glass-border: rgba(0,255,231,0.18);
+      --text: #cde8ff;
+      --muted: rgba(180,220,255,0.45);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--void);
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    #particle-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      z-index: 10;
+    }
+
+    .hero-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--plasma);
+      text-transform: uppercase;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      padding: 0.45rem 1.2rem;
+      border-radius: 2rem;
+      margin-bottom: 2.2rem;
+      backdrop-filter: blur(8px);
+      animation: fadeSlideDown 1s ease both;
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 7rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      animation: fadeSlideDown 1s 0.15s ease both;
+    }
+
+    .hero-title .invis {
+      display: block;
+      background: linear-gradient(135deg, var(--plasma) 0%, var(--quantum) 60%, var(--bio) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .verse {
+      display: block;
+      color: #fff;
+      text-shadow: 0 0 60px rgba(0,255,231,0.3);
+    }
+
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      max-width: 540px;
+      animation: fadeSlideDown 1s 0.3s ease both;
+    }
+
+    .hero-tagline {
+      margin-top: 1rem;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--plasma);
+      opacity: 0.8;
+      animation: fadeSlideDown 1s 0.4s ease both;
+    }
+
+    .hero-cta {
+      margin-top: 3rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeSlideDown 1s 0.55s ease both;
+    }
+
+    .btn-primary {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 2.2rem;
+      background: linear-gradient(135deg, var(--plasma), var(--quantum));
+      color: #000;
+      border: none;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(0,255,231,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0,255,231,0.5);
+    }
+
+    .btn-ghost {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 2.2rem;
+      background: transparent;
+      color: var(--plasma);
+      border: 1px solid var(--glass-border);
+      border-radius: 0.3rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s, border-color 0.2s;
+      backdrop-filter: blur(6px);
+    }
+    .btn-ghost:hover {
+      background: var(--glass);
+      border-color: var(--plasma);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.4;
+      animation: fadeSlideDown 1s 1s ease both;
+    }
+    .scroll-hint span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; }
+    .scroll-arrow {
+      width: 1px; height: 3rem;
+      background: linear-gradient(to bottom, var(--plasma), transparent);
+      animation: scrollPulse 2s infinite;
+    }
+
+    /* ── SECTIONS ── */
+    section { position: relative; z-index: 10; padding: 5rem 1.5rem; }
+
+    .section-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      color: var(--plasma);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 3rem);
+      font-weight: 700;
+      line-height: 1.15;
+      max-width: 700px;
+      margin-bottom: 1rem;
+    }
+
+    .section-body {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.8;
+      max-width: 620px;
+    }
+
+    /* ── WORLDS GRID ── */
+    .worlds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5px;
+      max-width: 1200px;
+      margin: 4rem auto 0;
+    }
+
+    .world-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 3/2;
+      background: var(--deep);
+      border: 1px solid var(--glass-border);
+      transition: border-color 0.3s;
+    }
+    .world-card:hover { border-color: var(--card-accent, var(--plasma)); }
+
+    .world-card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .world-card-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(2,4,8,0.92) 0%, transparent 60%);
+    }
+
+    .world-icon { font-size: 1.8rem; margin-bottom: 0.6rem; display: block; }
+    .world-name { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.3rem; }
+    .world-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.6; }
+
+    .world-tag {
+      position: absolute; top: 1rem; right: 1rem;
+      font-family: 'Orbitron', sans-serif; font-size: 0.55rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.3rem 0.7rem; border-radius: 2rem; border: 1px solid;
+    }
+
+    /* ── VR VIEWER ── */
+    #vr-section { max-width: 1200px; margin: 0 auto; padding: 5rem 1.5rem; }
+
+    .vr-header {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: end; margin-bottom: 2rem;
+    }
+    @media (max-width: 700px) { .vr-header { grid-template-columns: 1fr; gap: 1.5rem; } }
+
+    .vr-controls { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+
+    .scene-btn {
+      font-family: 'Orbitron', sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--glass-border); background: var(--glass);
+      color: var(--muted); cursor: pointer; border-radius: 0.25rem; transition: all 0.2s;
+    }
+    .scene-btn:hover, .scene-btn.active {
+      background: rgba(0,255,231,0.12); border-color: var(--plasma); color: var(--plasma);
+    }
+
+    .aframe-wrapper {
+      width: 100%; height: 520px;
+      border: 1px solid var(--glass-border);
+      position: relative; overflow: hidden; background: #000; border-radius: 0.3rem;
+    }
+
+    .vr-badge {
+      position: absolute; top: 1rem; left: 1rem; z-index: 20;
+      font-family: 'Orbitron', sans-serif; font-size: 0.55rem; letter-spacing: 0.15em;
+      padding: 0.35rem 0.8rem; background: rgba(0,0,0,0.7);
+      border: 1px solid var(--plasma); color: var(--plasma);
+      border-radius: 2rem; backdrop-filter: blur(6px);
+    }
+
+    .vr-enter { position: absolute; bottom: 1rem; right: 1rem; z-index: 20; }
+
+    /* ── TECH CARDS ── */
+    .tech-section {
+      max-width: 1200px; margin: 0 auto; padding: 5rem 1.5rem;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+
+    .tech-card {
+      padding: 1.8rem; border: 1px solid var(--glass-border);
+      background: var(--glass); backdrop-filter: blur(8px); border-radius: 0.3rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .tech-card:hover { border-color: rgba(0,255,231,0.4); transform: translateY(-4px); }
+
+    .tech-num {
+      font-family: 'Orbitron', sans-serif; font-size: 2.5rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--plasma), var(--quantum));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1; margin-bottom: 0.6rem;
+    }
+
+    .tech-name { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+    .tech-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── QUOTE ── */
+    .quote-block { max-width: 860px; margin: 0 auto; padding: 5rem 1.5rem; text-align: center; }
+    .quote-text { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3vw, 2rem); font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 1.5rem; }
+    .quote-text em { background: linear-gradient(90deg, var(--plasma), var(--quantum)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-style: normal; }
+    .quote-attr { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.1em; }
+
+    footer {
+      border-top: 1px solid var(--glass-border); padding: 2.5rem 1.5rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+      max-width: 1200px; margin: 0 auto; font-size: 0.7rem; color: var(--muted);
+      z-index: 10; position: relative;
+    }
+    .footer-logo { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--plasma); }
+
+    @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes scrollPulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+    @keyframes rotate360 { to{transform:rotate(360deg)} }
+
+    .divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--plasma), var(--quantum), transparent);
+      opacity: 0.25;
+    }
+
+    .glow-ring {
+      width: 600px; height: 600px; border-radius: 50%;
+      border: 1px solid rgba(0,255,231,0.08);
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      pointer-events: none; z-index: 1;
+      animation: rotate360 30s linear infinite;
+    }
+    .glow-ring::before {
+      content:''; position:absolute; inset:30px; border-radius:50%;
+      border:1px solid rgba(123,47,255,0.06);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particle-bg"></canvas>
+<div class="glow-ring"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✦ A-Frame VR · AR · Immersive Science</div>
+  <h1 class="hero-title">
+    <span class="invis">InvisiVerse</span>
+    <span class="verse">Beyond the Visible</span>
+  </h1>
+  <p class="hero-sub">Exploring the Hidden Worlds of Science through Immersive VR &amp; AR Technologies</p>
+  <p class="hero-tagline">"Enter the world you were never meant to see."</p>
+  <div class="hero-cta">
+    <button class="btn-primary" onclick="scrollToVR()">Launch VR Explorer</button>
+    <button class="btn-ghost" onclick="scrollToWorlds()">Discover Worlds</button>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WORLDS GRID -->
+<section id="worlds-section" style="max-width:1200px;margin:0 auto;">
+  <div style="padding:0 1.5rem 2rem">
+    <div class="section-label">// Invisible Realms</div>
+    <h2 class="section-title">Four Hidden Universes Rendered Visible</h2>
+    <p class="section-body">From the probabilistic fog of quantum wavefunctions to the microscopic ballet of marine life — each domain is an entire universe invisible to the naked eye.</p>
+  </div>
+
+  <div class="worlds-grid">
+    <div class="world-card" style="--card-accent:var(--quantum)" onclick="switchScene('quantum')">
+      <canvas class="world-card-canvas" id="c-quantum"></canvas>
+      <div class="world-card-overlay">
+        <span class="world-icon">⚛️</span>
+        <div class="world-name">Quantum Wavefunctions</div>
+        <div class="world-desc">Navigate probability clouds, superposition states, and entanglement bridges in real-time 3D.</div>
+      </div>
+      <div class="world-tag" style="color:var(--quantum);border-color:var(--quantum);background:rgba(123,47,255,0.1)">Quantum</div>
+    </div>
+
+    <div class="world-card" style="--card-accent:var(--field)" onclick="switchScene('field')">
+      <canvas class="world-card-canvas" id="c-field"></canvas>
+      <div class="world-card-overlay">
+        <span class="world-icon">🌐</span>
+        <div class="world-name">Electromagnetic Fields</div>
+        <div class="world-desc">Walk through invisible force fields — magnetic flux lines, electric potential surfaces, and EM wave propagation.</div>
+      </div>
+      <div class="world-tag" style="color:var(--field);border-color:var(--field);background:rgba(255,214,0,0.08)">Fields</div>
+    </div>
+
+    <div class="world-card" style="--card-accent:var(--bio)" onclick="switchScene('bio')">
+      <canvas class="world-card-canvas" id="c-bio"></canvas>
+      <div class="world-card-overlay">
+        <span class="world-icon">🦠</span>
+        <div class="world-name">Marine Microorganisms</div>
+        <div class="world-desc">Dive into a living ocean teeming with bioluminescent plankton, diatoms, and microscopic predators.</div>
+      </div>
+      <div class="world-tag" style="color:var(--bio);border-color:var(--bio);background:rgba(0,255,136,0.08)">Biology</div>
+    </div>
+
+    <div class="world-card" style="--card-accent:var(--chem)" onclick="switchScene('chem')">
+      <canvas class="world-card-canvas" id="c-chem"></canvas>
+      <div class="world-card-overlay">
+        <span class="world-icon">🧪</span>
+        <div class="world-name">Chemical Compounds</div>
+        <div class="world-desc">Reach inside molecular structures — bond angles, electron density clouds, and reaction pathways animated live.</div>
+      </div>
+      <div class="world-tag" style="color:var(--chem);border-color:var(--chem);background:rgba(255,107,53,0.08)">Chemistry</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="margin-top:4rem"></div>
+
+<!-- A-FRAME VR VIEWER -->
+<div id="vr-section">
+  <div class="vr-header">
+    <div>
+      <div class="section-label">// Immersive VR Simulator</div>
+      <h2 class="section-title">Step Inside the Invisible</h2>
+    </div>
+    <p class="section-body">
+      Powered by <strong style="color:var(--plasma)">A-Frame</strong> WebVR — click &amp; drag to look around. Wear a VR headset to enter fully. Switch scenes below to explore each scientific domain.
+    </p>
+  </div>
+
+  <div class="vr-controls">
+    <button class="scene-btn active" id="btn-quantum" onclick="switchScene('quantum')">⚛ Quantum</button>
+    <button class="scene-btn" id="btn-field"   onclick="switchScene('field')">🌐 Fields</button>
+    <button class="scene-btn" id="btn-bio"     onclick="switchScene('bio')">🦠 Marine Bio</button>
+    <button class="scene-btn" id="btn-chem"    onclick="switchScene('chem')">🧪 Chemistry</button>
+  </div>
+
+  <div class="aframe-wrapper">
+    <div class="vr-badge" id="scene-label">⚛ Quantum Wavefunction — Schrödinger Landscape</div>
+
+    <a-scene
+      id="main-scene"
+      embedded
+      vr-mode-ui="enabled: true"
+      background="color: #000"
+      fog="type: exponential; color: #000; density: 0.015"
+    >
+      <a-assets>
+        <a-mixin id="orb"
+          geometry="primitive: sphere; radius: 0.15; segmentsWidth: 16; segmentsHeight: 16"
+          material="color: #00ffe7; emissive: #00ffe7; emissiveIntensity: 0.6; opacity: 0.85; transparent: true"
+        ></a-mixin>
+      </a-assets>
+
+      <a-camera position="0 1.6 6" look-controls wasd-controls>
+        <a-cursor color="#00ffe7" fuse="false"
+          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+          material="color: #00ffe7; shader: flat">
+        </a-cursor>
+      </a-camera>
+
+      <a-light type="ambient"     color="#0a1a2a" intensity="1.2"></a-light>
+      <a-light type="directional" color="#00ffe7" intensity="0.4" position="5 8 -3"></a-light>
+      <a-light type="point"       color="#7b2fff" intensity="0.8" position="-3 3 0"></a-light>
+
+      <a-entity id="scene-root"></a-entity>
+
+      <a-sky color="#000408"></a-sky>
+
+      <a-entity
+        geometry="primitive: plane; width: 60; height: 60"
+        material="color: #00ffe7; opacity: 0.04; transparent: true; shader: flat; side: double"
+        rotation="-90 0 0" position="0 -0.01 0">
+      </a-entity>
+    </a-scene>
+
+    <div class="vr-enter">
+      <button class="btn-ghost" onclick="document.getElementById('main-scene').enterVR()">Enter VR ⟶</button>
+    </div>
+  </div>
+</div>
+
+<div class="divider" style="margin-top:4rem"></div>
+
+<!-- QUOTE -->
+<div class="quote-block">
+  <div class="quote-text">
+    "The universe is not only stranger than we <em>imagine</em> — it is stranger than we <em>can</em> imagine. VR doesn't simplify it; it makes the strangeness <em>inhabitable</em>."
+  </div>
+  <div class="quote-attr">— InvisiVerse Design Manifesto</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- TECH STACK -->
+<div class="tech-section">
+  <div class="section-label">// Technology Matrix</div>
+  <h2 class="section-title">How We Render the Invisible</h2>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-num">01</div>
+      <div class="tech-name">A-Frame WebVR</div>
+      <div class="tech-desc">Mozilla's declarative HTML VR framework — run immersive scenes in-browser with zero plugins, full headset support via WebXR.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">02</div>
+      <div class="tech-name">Quantum Simulation</div>
+      <div class="tech-desc">Schrödinger equation solved numerically per-frame. Probability density rendered as animated volumetric fog and particle clouds.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">03</div>
+      <div class="tech-name">Bioluminescence Engine</div>
+      <div class="tech-desc">GPU-instanced micro-organism swarms with flocking behaviour (Boids) and real-time bioluminescent bloom shaders.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">04</div>
+      <div class="tech-name">Molecular AR Overlay</div>
+      <div class="tech-desc">WebAR marker tracking projects bond structures onto real lab benches. Electron-density isosurfaces rendered at 60fps via WebGL.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">05</div>
+      <div class="tech-name">Field Line Tracer</div>
+      <div class="tech-desc">Real-time vector field integration traces electromagnetic flux lines. Coulomb / Biot-Savart computed on-device via WebGPU compute shaders.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">06</div>
+      <div class="tech-name">Haptic Feedback API</div>
+      <div class="tech-desc">Paired VR controllers pulse resistive force when colliding with simulated force-field barriers — making the invisible tactile.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<footer>
+  <div class="footer-logo">InvisiVerse</div>
+  <div>Beyond the Visible · Science Discovery Platform</div>
+  <div>Built with A-Frame WebVR Framework</div>
+</footer>
+
+
+<script>
+/* ── PARTICLE BACKGROUND ── */
+(function(){
+  const canvas = document.getElementById('particle-bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  for(let i=0;i<160;i++){
+    particles.push({
+      x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+      r:Math.random()*1.2+0.2,
+      vx:(Math.random()-.5)*0.18, vy:(Math.random()-.5)*0.18,
+      a:Math.random(), hue:[180,270,145,25][Math.floor(Math.random()*4)]
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      p.a+=0.008;
+      const alpha=(Math.sin(p.a)*0.5+0.5)*0.5;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`hsla(${p.hue},100%,70%,${alpha})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── CARD MINI-CANVASES ── */
+function animateCard(id,fn){
+  const c=document.getElementById(id); if(!c)return;
+  const ctx=c.getContext('2d'); let t=0;
+  function loop(){
+    c.width=c.offsetWidth||400; c.height=c.offsetHeight||260;
+    fn(ctx,c.width,c.height,t); t+=0.02; requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+animateCard('c-quantum',(ctx,W,H,t)=>{
+  ctx.clearRect(0,0,W,H);
+  for(let x=0;x<W;x+=4)for(let y=0;y<H;y+=4){
+    const nx=(x/W)*6-3,ny=(y/H)*4-2;
+    const prob=Math.exp(-(nx*nx+ny*ny)/2)*(0.6+0.4*Math.sin(nx*3+t*2))*(0.6+0.4*Math.cos(ny*3-t*1.5));
+    ctx.fillStyle=`rgba(123,47,255,${prob*0.7})`; ctx.fillRect(x,y,4,4);
+  }
+  for(let i=0;i<6;i++){
+    const angle=(i/6)*Math.PI*2+t,r=60+25*Math.sin(t*1.3+i);
+    const cx=W/2+Math.cos(angle)*r,cy=H/2+Math.sin(angle)*r*0.5;
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,14);
+    g.addColorStop(0,'rgba(0,255,231,0.9)'); g.addColorStop(1,'rgba(123,47,255,0)');
+    ctx.beginPath(); ctx.arc(cx,cy,14,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  }
+});
+
+animateCard('c-field',(ctx,W,H,t)=>{
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  for(let i=0;i<16;i++){
+    const angle=(i/16)*Math.PI*2;
+    for(let r=10;r<140;r+=6){
+      const x=cx+Math.cos(angle+t*0.3)*r,y=cy+Math.sin(angle+t*0.3)*r*0.7;
+      ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,214,0,${(1-r/140)*0.5})`; ctx.fill();
+    }
+  }
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,30);
+  g.addColorStop(0,'rgba(255,214,0,0.9)'); g.addColorStop(1,'rgba(255,107,53,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,30,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+});
+
+animateCard('c-bio',(ctx,W,H,t)=>{
+  ctx.fillStyle='rgba(0,5,15,0.15)'; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<30;i++){
+    const s=i*137.5;
+    const x=(Math.sin(s)*0.5+0.5)*W+Math.sin(t*0.7+s)*20;
+    const y=(Math.cos(s)*0.5+0.5)*H+Math.cos(t*0.5+s)*15;
+    const sz=3+Math.sin(t+s)*2, a=0.4+0.4*Math.sin(t*2+s);
+    const g=ctx.createRadialGradient(x,y,0,x,y,sz*3);
+    g.addColorStop(0,`rgba(0,255,136,${a})`); g.addColorStop(0.5,`rgba(0,200,255,${a*0.3})`); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(x,y,sz*3,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  }
+});
+
+animateCard('c-chem',(ctx,W,H,t)=>{
+  ctx.clearRect(0,0,W,H);
+  const atoms=[
+    {x:W/2,y:H/2,c:'#ff6b35',r:18},{x:W/2+70,y:H/2-35,c:'#00ffe7',r:12},
+    {x:W/2-65,y:H/2-40,c:'#00ffe7',r:12},{x:W/2+60,y:H/2+50,c:'#ffd600',r:14},{x:W/2-55,y:H/2+55,c:'#7b2fff',r:10}
+  ];
+  atoms.slice(1).forEach(a=>{
+    ctx.strokeStyle=`rgba(255,255,255,${0.4+0.3*Math.sin(t*2)})`; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(atoms[0].x,atoms[0].y); ctx.lineTo(a.x,a.y); ctx.stroke();
+  });
+  [55,90].forEach((r,i)=>{
+    ctx.strokeStyle='rgba(0,255,231,0.12)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.ellipse(W/2,H/2,r,r*0.5,0,0,Math.PI*2); ctx.stroke();
+    const ex=W/2+Math.cos(t*(i+1)*1.4)*r,ey=H/2+Math.sin(t*(i+1)*1.4)*r*0.5;
+    const g=ctx.createRadialGradient(ex,ey,0,ex,ey,6);
+    g.addColorStop(0,'rgba(0,255,231,1)'); g.addColorStop(1,'rgba(0,255,231,0)');
+    ctx.beginPath(); ctx.arc(ex,ey,6,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  });
+  atoms.forEach(a=>{
+    const g=ctx.createRadialGradient(a.x,a.y,0,a.x,a.y,a.r*2);
+    g.addColorStop(0,a.c+'dd'); g.addColorStop(1,a.c+'00');
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*2,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r,0,Math.PI*2); ctx.fillStyle=a.c; ctx.fill();
+  });
+});
+
+/* ── A-FRAME SCENE BUILDER ── */
+function el(tag,attrs){
+  const e=document.createElement(tag);
+  for(const[k,v] of Object.entries(attrs||{})) e.setAttribute(k,v);
+  return e;
+}
+
+function gaussRand(){
+  let u=0,v=0;
+  while(!u) u=Math.random(); while(!v) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function addLabel(root,text,pos){
+  root.appendChild(el('a-text',{value:text,position:pos,color:'#00ffe7',align:'center',width:'8'}));
+}
+
+function buildQuantum(root){
+  for(let i=0;i<120;i++){
+    const theta=Math.random()*Math.PI*2,phi=Math.acos(2*Math.random()-1),r=gaussRand()*3;
+    const x=r*Math.sin(phi)*Math.cos(theta),y=r*Math.sin(phi)*Math.sin(theta)*0.4+1.6,z=r*Math.cos(phi)-3;
+    const size=0.08+Math.random()*0.18,alpha=0.15+Math.random()*0.5;
+    const s=el('a-sphere',{
+      position:`${x} ${y} ${z}`,radius:size,
+      material:`color:#7b2fff;opacity:${alpha};transparent:true;emissive:#00ffe7;emissiveIntensity:0.3`,
+      animation:`property:position;to:${x} ${y+0.3+Math.random()*0.4} ${z};dir:alternate;dur:${1500+Math.random()*2000};loop:true;easing:easeInOutSine`
+    });
+    root.appendChild(s);
+  }
+  root.appendChild(el('a-sphere',{position:'0 1.6 -3',radius:'0.35',material:'color:#00ffe7;emissive:#00ffe7;emissiveIntensity:0.8'}));
+  [0.9,1.8,2.8].forEach((r,i)=>{
+    const ring=el('a-torus',{
+      position:'0 1.6 -3',radius:r,'radius-tubular':'0.02',rotation:`${30*i} ${60*i} 0`,
+      material:'color:#00ffe7;opacity:0.25;transparent:true',
+      animation:`property:rotation;to:${30*i+360} ${60*i} 0;loop:true;dur:${4000+i*2000};easing:linear`
+    });
+    root.appendChild(ring);
+    const grp=el('a-entity',{position:'0 1.6 -3'});
+    const pivot=el('a-entity',{rotation:`${30*i} ${60*i} 0`});
+    pivot.setAttribute('animation',`property:rotation;to:${30*i+360} ${60*i} 0;loop:true;dur:${4000+i*2000};easing:linear`);
+    const esph=el('a-sphere',{position:`${r} 0 0`,radius:'0.07',material:'color:#fff;emissive:#00ffe7;emissiveIntensity:1'});
+    pivot.appendChild(esph); grp.appendChild(pivot); root.appendChild(grp);
+  });
+  addLabel(root,'QUANTUM WAVEFUNCTION','0 4.2 -5');
+}
+
+function buildField(root){
+  for(let i=0;i<20;i++){
+    const angle=(i/20)*Math.PI*2;
+    for(let r=0.5;r<=4;r+=0.5){
+      root.appendChild(el('a-sphere',{
+        position:`${Math.cos(angle)*r} 1.6 ${Math.sin(angle)*r-3}`,radius:'0.04',
+        material:`color:#ffd600;opacity:${0.8-r/6};transparent:true;emissive:#ffd600;emissiveIntensity:0.5`
+      }));
+    }
+  }
+  root.appendChild(el('a-sphere',{
+    position:'0 1.6 -3',radius:'0.5',
+    material:'color:#ff6b35;emissive:#ff6b35;emissiveIntensity:0.9',
+    animation:'property:scale;to:1.15 1.15 1.15;dir:alternate;dur:800;loop:true'
+  }));
+  for(let i=1;i<=4;i++){
+    root.appendChild(el('a-torus',{
+      position:'0 1.6 -3',radius:i*1.5,'radius-tubular':'0.03',
+      material:`color:#ffd600;opacity:${0.35-i*0.06};transparent:true`,
+      animation:`property:scale;from:0.1 0.1 0.1;to:${2+i*0.4} ${2+i*0.4} ${2+i*0.4};loop:true;dur:${2000+i*500};easing:easeOutQuad;delay:${i*500}`
+    }));
+  }
+  addLabel(root,'ELECTROMAGNETIC FIELD','0 4.2 -5');
+}
+
+function buildBio(root){
+  const colors=['#00ff88','#00ffe7','#4dffb4','#00b4d8'];
+  for(let i=0;i<80;i++){
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    const x=(Math.random()-.5)*12,y=Math.random()*4+0.2,z=(Math.random()-.5)*8-3;
+    const size=0.05+Math.random()*0.18;
+    const orb=el('a-sphere',{
+      position:`${x} ${y} ${z}`,radius:size,
+      material:`color:${c};emissive:${c};emissiveIntensity:0.8;opacity:0.8;transparent:true`,
+      animation:`property:position;to:${x+(Math.random()-.5)*2} ${y+(Math.random()-.5)*1.5} ${z+(Math.random()-.5)*1.5};dir:alternate;dur:${2000+Math.random()*3000};loop:true;easing:easeInOutSine`
+    });
+    root.appendChild(orb);
+  }
+  for(let i=0;i<4;i++){
+    root.appendChild(el('a-torus',{
+      position:`${(Math.random()-.5)*8} ${1+Math.random()*2} ${(Math.random()-.5)*6-3}`,
+      radius:0.4+Math.random()*0.4,'radius-tubular':'0.06',
+      material:'color:#00ff88;opacity:0.4;transparent:true;emissive:#00ff88;emissiveIntensity:0.5',
+      animation:`property:rotation;to:360 360 360;loop:true;dur:${5000+i*1500};easing:linear`
+    }));
+  }
+  addLabel(root,'MARINE MICROORGANISMS','0 4.2 -5');
+}
+
+function buildChem(root){
+  const atoms=[
+    {x:0,  y:1.6,z:-3,  c:'#ff6b35',r:0.35,l:'C'},
+    {x:1.4,y:2.4,z:-3.5,c:'#00ffe7',r:0.22,l:'H'},
+    {x:-1.4,y:2.4,z:-3.5,c:'#00ffe7',r:0.22,l:'H'},
+    {x:1.2,y:0.8,z:-2.5,c:'#ffd600',r:0.28,l:'O'},
+    {x:-1.2,y:0.8,z:-2.5,c:'#7b2fff',r:0.2, l:'N'},
+  ];
+  atoms.forEach(a=>{
+    root.appendChild(el('a-sphere',{position:`${a.x} ${a.y} ${a.z}`,radius:a.r,material:`color:${a.c};emissive:${a.c};emissiveIntensity:0.5`}));
+    root.appendChild(el('a-text',{value:a.l,position:`${a.x} ${a.y+a.r+0.22} ${a.z}`,color:'#fff',align:'center',width:'1.5'}));
+  });
+  atoms.slice(1).forEach(a=>{
+    const dx=a.x,dy=a.y-1.6,dz=a.z-(-3);
+    const len=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    const mx=a.x/2,my=(1.6+a.y)/2,mz=(-3+a.z)/2;
+    const angleY=Math.atan2(dx,dz)*(180/Math.PI);
+    const angleX=Math.atan2(Math.sqrt(dx*dx+dz*dz),dy)*(180/Math.PI)-90;
+    root.appendChild(el('a-cylinder',{
+      position:`${mx} ${my} ${mz}`,height:len,radius:'0.05',rotation:`${angleX} ${angleY} 0`,
+      material:'color:#ffffff;opacity:0.5;transparent:true'
+    }));
+  });
+  for(let i=0;i<30;i++){
+    const angle=Math.random()*Math.PI*2,r=1.5+Math.random()*0.8;
+    const ex=Math.cos(angle)*r,ey=1.6+Math.sin(angle)*r*0.5;
+    root.appendChild(el('a-sphere',{
+      position:`${ex} ${ey} ${-3+(Math.random()-.5)*0.6}`,radius:'0.035',
+      material:'color:#fff;emissive:#00ffe7;emissiveIntensity:1;opacity:0.7;transparent:true',
+      animation:`property:position;to:${ex*1.05} ${ey+0.2} ${-3+(Math.random()-.5)*0.6};dir:alternate;dur:${600+Math.random()*800};loop:true`
+    }));
+  }
+  addLabel(root,'CHEMICAL COMPOUND','0 4.2 -5');
+}
+
+const SCENES={
+  quantum:{label:'⚛ Quantum Wavefunction — Schrödinger Landscape',build:buildQuantum},
+  field:  {label:'🌐 Electromagnetic Field Lines — Maxwell Visualizer', build:buildField},
+  bio:    {label:'🦠 Marine Microorganism Ocean — Bioluminescent Swarm',build:buildBio},
+  chem:   {label:'🧪 Chemical Compound — Molecular Bond Structure',     build:buildChem},
+};
+
+function switchScene(name){
+  document.querySelectorAll('.scene-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('btn-'+name); if(btn) btn.classList.add('active');
+  document.getElementById('scene-label').textContent=SCENES[name].label;
+  const root=document.getElementById('scene-root');
+  while(root.firstChild) root.removeChild(root.firstChild);
+  SCENES[name].build(root);
+  document.getElementById('vr-section').scrollIntoView({behavior:'smooth'});
+}
+
+function scrollToVR()     { document.getElementById('vr-section').scrollIntoView({behavior:'smooth'}); }
+function scrollToWorlds() { document.getElementById('worlds-section').scrollIntoView({behavior:'smooth'}); }
+
+window.addEventListener('DOMContentLoaded',()=>{
+  buildQuantum(document.getElementById('scene-root'));
+});
+</script>
+</body>
+</html>
