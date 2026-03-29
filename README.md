@@ -43,3 +43,8 @@ Haptic Feedback: Adding "resistance" when pushing two like-charged particles tog
 Real-time Data: Hooking into microscopy APIs to visualize live marine microorganism movements.
 
 Molecular Docking: Enabling hand-tracked "lock and key" simulations for chemical compounds.
+
+YouTube Video Link:
+https://youtu.be/rTh16E90jXk
+https://youtu.be/uyEq9Fxh3S4
+
