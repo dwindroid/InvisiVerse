@@ -47,4 +47,5 @@ Molecular Docking: Enabling hand-tracked "lock and key" simulations for chemical
 YouTube Video Link:
 https://youtu.be/rTh16E90jXk
 https://youtu.be/uyEq9Fxh3S4
+<img width="1181" height="667" alt="image" src="https://github.com/user-attachments/assets/90b9fcfc-72a8-429f-8435-fe0d35988d69" />
 
